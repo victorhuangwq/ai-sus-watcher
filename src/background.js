@@ -134,7 +134,9 @@ async function checkPageChanges(forceNotification = false) {
     const tabs = await chrome.tabs.query({ url: currentSettings.url });
     
     if (tabs.length === 0) {
-      throw new Error(`No tab found for ${currentSettings.url}. Please open the page first.`);
+      console.log(`No target tab found, stopping monitoring for ${currentSettings.url}`);
+      chrome.alarms.clear('pageCheck');
+      return;
     }
     
     const targetTab = tabs[0];
