@@ -1,6 +1,6 @@
-# AI SUS Watcher
+<h1> AI SUS Event Site Watcher </h1> 
 
-**By Squash**
+<b> By Squash  <span> <img src="/favicon.png"/> </span> </b>
 
 AI SUS Watcher monitors the YC AI Startup School event page for you! So you don't have to worry about missing any important updates on the page :').  (Works for other pages too!)
 
