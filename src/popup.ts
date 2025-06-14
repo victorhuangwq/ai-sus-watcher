@@ -53,12 +53,8 @@ async function loadSettings() {
   elements.cadence.value = settings.cadence;
   
   // Update cadence display
-  const cadenceValue = parseFloat(settings.cadence);
-  if (cadenceValue < 1) {
-    elements.cadenceValue.textContent = `${Math.round(cadenceValue * 60)} sec`;
-  } else {
-    elements.cadenceValue.textContent = `${cadenceValue} min`;
-  }
+  const cadenceValue = parseInt(settings.cadence);
+  elements.cadenceValue.textContent = `${cadenceValue} min`;
   
   elements.prompt.value = settings.prompt;
   elements.apiKey.value = settings.apiKey;
@@ -148,7 +144,7 @@ async function saveSettings() {
   
   const settings = {
     url: elements.url.value.trim(),
-    cadence: parseFloat(elements.cadence.value),
+    cadence: parseInt(elements.cadence.value),
     prompt: elements.prompt.value.trim() || DEFAULT_SETTINGS.prompt,
     provider: selectedProvider,
     apiKey: elements.apiKey.value.trim()
@@ -210,12 +206,8 @@ async function testNow() {
 
 
 elements.cadence.addEventListener('input', () => {
-  const value = parseFloat(elements.cadence.value);
-  if (value < 1) {
-    elements.cadenceValue.textContent = `${Math.round(value * 60)} sec`;
-  } else {
-    elements.cadenceValue.textContent = `${value} min`;
-  }
+  const value = parseInt(elements.cadence.value);
+  elements.cadenceValue.textContent = `${value} min`;
 });
 
 elements.providers.forEach(radio => {
