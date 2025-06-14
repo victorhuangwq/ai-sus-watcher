@@ -1,0 +1,25 @@
+{
+  "name": "ai-sus-watcher",
+  "version": "1.0.0",
+  "description": "AI SUS Watcher - Chrome extension to monitor YC AI Startup School and other websites for changes with AI-powered summaries",
+  "main": "background.js",
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node dev-server.js",
+    "test": "jest"
+  },
+  "keywords": ["chrome-extension", "page-monitor", "ai", "notifications"],
+  "author": "Squash",
+  "license": "MIT",
+  "dependencies": {
+    "diff": "^5.1.0"
+  },
+  "devDependencies": {
+    "express": "^4.18.2",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom"
+  }
+}
