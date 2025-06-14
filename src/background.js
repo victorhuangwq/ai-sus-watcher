@@ -28,6 +28,11 @@ chrome.runtime.onStartup.addListener(async () => {
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace === 'local') {
+    // Initialize currentSettings if it's null
+    if (!currentSettings) {
+      currentSettings = { ...DEFAULT_SETTINGS };
+    }
+    
     let settingsChanged = false;
     for (const key in changes) {
       if (key in DEFAULT_SETTINGS) {
