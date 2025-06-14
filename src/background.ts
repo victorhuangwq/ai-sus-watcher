@@ -162,6 +162,32 @@ async function startMonitoring() {
   }
   
   try {
+    // Capture initial snapshot before starting monitoring
+    const tabs = await chrome.tabs.query({ url: currentSettings.url });
+    
+    if (tabs.length > 0) {
+      const targetTab = tabs[0];
+      if (targetTab.id) {
+        try {
+          // Ensure content script is injected
+          await ensureContentScriptInjected(targetTab.id);
+          
+          // Get current page content as initial snapshot
+          const response = await chrome.tabs.sendMessage(targetTab.id, { action: 'getPageContent' }) as PageContentResponse;
+          
+          if (response.success && response.content) {
+            // Store the initial snapshot
+            await chrome.storage.local.set({ snapshot: response.content });
+            currentSettings.snapshot = response.content;
+            console.log('Initial snapshot captured for monitoring');
+          }
+        } catch (error) {
+          console.warn('Could not capture initial snapshot:', error);
+          // Continue with monitoring even if snapshot capture fails
+        }
+      }
+    }
+    
     // Update the monitoring state
     currentSettings.monitoringActive = true;
     await chrome.storage.local.set({ monitoringActive: true });
