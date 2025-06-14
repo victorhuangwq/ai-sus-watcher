@@ -9,20 +9,17 @@
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-top">
-        <h1>🔔 AI SUS Watcher</h1>
-        <div class="monitoring-controls">
-          <div class="monitoring-status">
-            <span id="monitoring-status-text">Monitoring inactive</span>
-            <div id="monitoring-indicator" class="status-indicator inactive"></div>
-          </div>
-          <button id="monitoring-toggle" class="monitoring-btn" title="Start monitoring">
-            <span class="play-icon">▶</span>
-            <span class="stop-icon">⏸</span>
-          </button>
-        </div>
+      <div class="brand">
+        <h1>AI SUS Watcher</h1>
+        <span class="brand-subtitle">by Squash</span>
       </div>
-      <div class="by-squash">by Squash</div>
+      <div class="toggle-container">
+        <span class="toggle-label">Monitoring</span>
+        <button id="monitoring-toggle" class="toggle-switch" title="Start monitoring">
+          <div class="toggle-slider"></div>
+          <span class="toggle-text">OFF</span>
+        </button>
+      </div>
     </div>
     
     <div class="form-section">
@@ -41,7 +38,7 @@
 
     <div class="form-section">
       <label for="prompt">Prompt</label>
-      <textarea id="prompt" placeholder="Tell me the important changes in 2 sentences" rows="3"></textarea>
+      <textarea id="prompt" placeholder="Tell me the important changes in 10 words" rows="3"></textarea>
     </div>
 
     <div class="form-section">

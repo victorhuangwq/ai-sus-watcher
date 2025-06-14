@@ -11,7 +11,7 @@ interface Settings {
 const DEFAULT_SETTINGS: Settings = {
   url: 'https://events.ycombinator.com/ai-sus',
   cadence: 5,
-  prompt: 'Tell me the important changes in 2 sentences',
+  prompt: 'Tell me the important changes in 10 words',
   provider: 'no-llm',
   apiKey: '',
   snapshot: '',
@@ -30,8 +30,6 @@ interface ElementRefs {
   testBtn: HTMLButtonElement;
   status: HTMLElement;
   monitoringToggle: HTMLButtonElement;
-  monitoringStatusText: HTMLElement;
-  monitoringIndicator: HTMLElement;
 }
 
 const elements: ElementRefs = {
@@ -45,9 +43,7 @@ const elements: ElementRefs = {
   saveBtn: document.getElementById('save-btn') as HTMLButtonElement,
   testBtn: document.getElementById('test-btn') as HTMLButtonElement,
   status: document.getElementById('status') as HTMLElement,
-  monitoringToggle: document.getElementById('monitoring-toggle') as HTMLButtonElement,
-  monitoringStatusText: document.getElementById('monitoring-status-text') as HTMLElement,
-  monitoringIndicator: document.getElementById('monitoring-indicator') as HTMLElement
+  monitoringToggle: document.getElementById('monitoring-toggle') as HTMLButtonElement
 };
 
 async function loadSettings() {
@@ -83,16 +79,14 @@ function updateApiKeyVisibility() {
 }
 
 function updateMonitoringStatus(isActive: boolean) {
-  elements.monitoringStatusText.textContent = isActive ? 'Monitoring active' : 'Monitoring inactive';
+  const toggleText = elements.monitoringToggle.querySelector('.toggle-text') as HTMLElement;
+  
+  toggleText.textContent = isActive ? 'ON' : 'OFF';
   
   if (isActive) {
-    elements.monitoringIndicator.classList.remove('inactive');
-    elements.monitoringIndicator.classList.add('active');
     elements.monitoringToggle.classList.add('active');
     elements.monitoringToggle.title = 'Stop monitoring';
   } else {
-    elements.monitoringIndicator.classList.remove('active');
-    elements.monitoringIndicator.classList.add('inactive');
     elements.monitoringToggle.classList.remove('active');
     elements.monitoringToggle.title = 'Start monitoring';
   }
