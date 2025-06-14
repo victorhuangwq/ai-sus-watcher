@@ -1,4 +1,4 @@
-# 🔔 AI SUS Watcher
+# AI SUS Watcher
 
 **By Squash**
 
@@ -10,7 +10,7 @@ It will:
 - Notify you with a browser notification when changes are detected
 
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -48,7 +48,7 @@ It will:
 4. **Click "Save"** to start monitoring
 5. **Test it works** with the "Test now" button
 
-## 🎛️ Configuration Options
+## Configuration Options
 
 ### LLM Providers
 
@@ -59,6 +59,23 @@ It will:
 | **Google Gemini** | Uses Google Gemini API | Gemini-2.0-flash | ✅ |
 | **Chrome AI** | Uses Chrome's built-in AI (needs Chrome Beta or Dev) | Gemini Nano | ❌ |
 
+#### OpenAI
+1. Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
+2. Create a new secret key
+3. Copy and paste into the extension
+
+#### Google Gemini  
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+3. Copy and paste into the extension
+
+#### Chrome AI (Built-in)
+1. **Enable in Chrome**: Go to `chrome://flags/#prompt-api-for-gemini-nano`
+2. **Download Model**: May need to visit `chrome://components/` and update "Optimization Guide On Device Model"  
+3. **No API Key**: Uses Chrome's built-in Gemini Nano model
+4. **Hardware Requirements**: Requires compatible device with sufficient resources
+
+
 ### Example Prompts
 
 - `"Tell me the important changes in 2 sentences"`
@@ -66,7 +83,7 @@ It will:
 - `"What venue or schedule updates happened?"`
 - `"Give me bullet points of what changed"`
 
-## 🧪 Development & Testing
+## Development & Testing
 
 ### Dev Server
 
@@ -109,7 +126,7 @@ Then visit `http://localhost:8080/page` and use this as your target URL for test
 └── build.js                  # Build script with dependency management
 ```
 
-## 🔧 How It Works
+## How It Works
 
 1. **Tab Management**: Extension finds the target tab using your existing browser session
 2. **Page Refresh**: Refreshes the page to get the latest server-side content  
@@ -120,54 +137,18 @@ Then visit `http://localhost:8080/page` and use this as your target URL for test
 7. **Smart Notifications**: Chrome notifications show summaries, including test notifications
 8. **Auto-Stop**: Monitoring automatically stops when target tab is closed
 
-## 🛡️ Privacy & Security
+## Privacy & Security
 
 - **Local Storage**: All settings and snapshots stored in `chrome.storage.local`
 - **No Servers**: No data sent to external servers except direct LLM API calls
 - **API Keys**: Stored locally and only used for your chosen LLM provider
 - **Permissions**: Only requests necessary Chrome permissions (storage, alarms, notifications, tabs)
 
-## 📋 API Key Setup
-
-### OpenAI
-1. Go to [OpenAI API Keys](https://platform.openai.com/api-keys)
-2. Create a new secret key
-3. Copy and paste into the extension
-
-### Google Gemini  
-1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. Create a new API key
-3. Copy and paste into the extension
-
-### Chrome AI (Built-in)
-1. **Enable in Chrome**: Go to `chrome://flags/#prompt-api-for-gemini-nano`
-2. **Download Model**: May need to visit `chrome://components/` and update "Optimization Guide On Device Model"  
-3. **No API Key**: Uses Chrome's built-in Gemini Nano model
-4. **Hardware Requirements**: Requires compatible device with sufficient resources
-
-## 🚀 Usage Examples
-
-### Monitor YC AI Startup School (Default)
-- **URL**: `https://events.ycombinator.com/ai-sus`
-- **Cadence**: 5 minutes  
-- **Prompt**: "Tell me about any new sessions or venue updates"
-
-### Monitor University Announcements
-- **URL**: Your school's announcements page
-- **Cadence**: 15 minutes
-- **Prompt**: "Summarize any important announcements for students"
-
-### Monitor Product Updates
-- **URL**: Your favorite product's changelog
-- **Cadence**: 10 minutes  
-- **Prompt**: "What new features or fixes were released?"
-
-## 🐛 Troubleshooting
+## Troubleshooting
 
 **Extension not loading?**
 - Make sure you built it first: `npm run build`
 - Check that Developer mode is enabled in `chrome://extensions/`
-
 **No notifications appearing?**
 - Enable Chrome notifications: Go to `chrome://settings/content/notifications`
 - Check the service worker console in `chrome://extensions/` for errors
@@ -191,14 +172,14 @@ Then visit `http://localhost:8080/page` and use this as your target URL for test
 - Content script communication may fail temporarily during refresh
 - This is normal behavior - monitoring will resume after page loads
 
-## 📄 License
+## License
 
 MIT License - feel free to modify and distribute!
 
-## 🤝 Contributing
+## Contributing
 
 Built by **Squash** - contributions welcome! Please test your changes with the dev server before submitting.
 
 ---
 
-**Enjoy staying updated with AI SUS Watcher! 🚀**
+**Enjoy staying updated with AI SUS Watcher!**
