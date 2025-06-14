@@ -9,6 +9,8 @@ It will:
 - Summarize changes using AI (OpenAI, Google Gemini, or Chrome's built-in AI), and you can customize the prompt
 - Notify you with a browser notification when changes are detected
 
+<img width="1352" alt="Screenshot 2025-06-14 at 11 56 46 AM" src="https://github.com/user-attachments/assets/3ca62b31-156a-46e7-8354-9c8c54768e4f" />
+
 
 ## Quick Start
 
@@ -27,7 +29,7 @@ The AI SUS Watcher extension should appear in your toolbar!
 1. **Click the extension icon** in your Chrome toolbar
 2. **Configure your settings**:
    - **Target URL**: Default is YC AI Startup School (`https://events.ycombinator.com/ai-sus`)
-   - **Polling Cadence**: How often to check (1-15 minutes)
+   - **Polling Cadence**: How often to check (30 secs -15 minutes)
    - **AI Prompt**: How you want changes summarized
    - **LLM Provider**: Choose from:
      - **No LLM**: Just shows raw text differences
