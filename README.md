@@ -18,7 +18,7 @@ It will:
 
 1. Download the latest release from [GitHub Releases](https://github.com/victorhuangwq/ai-sus-watcher/releases)
 2. Unzip to a folder
-3. Open chrome://extensions in Chrome
+3. Open `chrome://extensions` in Chrome (or any Chromium browser)
 4. Enable Developer mode
 5. Click Load unpacked and select the unzipped folder
   
