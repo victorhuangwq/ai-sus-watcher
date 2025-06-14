@@ -14,13 +14,13 @@ It will:
 
 ### Installation
 
-1. `git clone https://github.com/victorhuangwq/ai-sus-watcher.git`
-4. **Load in Chrome**:
-   - Open `chrome://extensions/`
-   - Enable "Developer mode" (top right)
-   - Click "Load unpacked" and select the `dist/` folder
+1. Download the latest release from [GitHub Releases](https://github.com/victorhuangwq/ai-sus-watcher/releases)
+2. Unzip to a folder
+3. Open chrome://extensions in Chrome
+4. Enable Developer mode
+5. Click Load unpacked and select the unzipped folder
   
-The AI SUS Watcher extension should appear in your toolbar!
+The AI SUS Watcher extension should appear in your toolbar! 
 
 ### First Use
 
