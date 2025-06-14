@@ -75,6 +75,10 @@ chrome.action.onClicked.addListener(async () => {
   } else {
     await chrome.tabs.create({ url: targetUrl });
   }
+  
+  // Ensure monitoring is active when extension is clicked
+  console.log('Extension clicked - setting up alarm for monitoring');
+  setupAlarm();
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

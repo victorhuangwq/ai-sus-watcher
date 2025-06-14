@@ -38,7 +38,7 @@ It will:
    - **AI Prompt**: How you want changes summarized
    - **LLM Provider**: Choose from:
      - **No LLM**: Just shows raw text differences
-     - **OpenAI**: Uses OpenAI's GPT-3.5-turbo
+     - **OpenAI**: Uses OpenAI's gpt-4o-mini
      - **Google Gemini**: Uses Google Gemini-2.0-flash
      - **Chrome AI**: Uses Chrome's built-in Gemini Nano (requires Chrome Beta or Dev, some settings and hardware requirements apply) (see below for details)
 3. **Add API Key** (if using OpenAI/Gemini):
@@ -55,7 +55,7 @@ It will:
 | Provider | Description | Model | Requires API Key |
 |----------|-------------|-------|------------------|
 | **No LLM** | Shows raw text differences | - | ❌ |
-| **OpenAI** | Uses OpenAI API for summaries | GPT-3.5-turbo | ✅ |
+| **OpenAI** | Uses OpenAI API for summaries | gpt-4o-mini | ✅ |
 | **Google Gemini** | Uses Google Gemini API | Gemini-2.0-flash | ✅ |
 | **Chrome AI** | Uses Chrome's built-in AI (needs Chrome Beta or Dev) | Gemini Nano | ❌ |
 

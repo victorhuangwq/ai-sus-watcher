@@ -18,13 +18,13 @@ export class OpenAIAdapter extends BaseLLMAdapter {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [{
           role: 'user',
           content: `${prompt}\n\nChanges detected:\n${diff}`
         }],
         max_tokens: 150,
-        temperature: 0.7
+        temperature: 0.5
       })
     });
 
