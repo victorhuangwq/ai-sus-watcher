@@ -85,9 +85,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('Received message:', request);
   if (request.action === 'testNow') {
     console.log('Processing testNow request');
-    checkPageChanges(true).then(() => {
+    testNowWithLLM().then((result) => {
       console.log('Test completed successfully');
-      sendResponse({ success: true });
+      sendResponse(result);
     }).catch((error) => {
       console.error('Test failed:', error);
       sendResponse({ success: false, error: error.message });
@@ -95,6 +95,88 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 });
+
+async function testNowWithLLM() {
+  if (!currentSettings) {
+    const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
+    currentSettings = { ...DEFAULT_SETTINGS, ...stored };
+  }
+
+  const results = {
+    success: true,
+    pageTest: { success: false, message: '' },
+    llmTest: { success: false, message: '', provider: currentSettings.provider }
+  };
+
+  // Test LLM connectivity first (if not no-llm)
+  if (currentSettings.provider !== 'no-llm') {
+    try {
+      const llmAdapter = createLLMAdapter(currentSettings.provider, currentSettings.apiKey);
+      
+      // Test with a simple diff to verify LLM connectivity
+      const testDiff = '<p>Test change: New content added</p>';
+      const testPrompt = 'Summarize this change briefly';
+      
+      console.log(`Testing ${currentSettings.provider} LLM connectivity...`);
+      const summary = await llmAdapter.summarize(testDiff, testPrompt);
+      
+      results.llmTest.success = true;
+      results.llmTest.message = `${currentSettings.provider} connectivity verified`;
+      console.log(`LLM test successful: ${summary}`);
+      
+    } catch (error) {
+      console.error('LLM test failed:', error);
+      results.llmTest.success = false;
+      results.llmTest.message = `${currentSettings.provider} error: ${error.message}`;
+      results.success = false;
+    }
+  } else {
+    results.llmTest.success = true;
+    results.llmTest.message = 'No LLM provider configured';
+  }
+
+  // Test page monitoring (basic connectivity test)
+  try {
+    // Test basic page access without doing full diff check
+    const tabs = await chrome.tabs.query({ url: currentSettings.url });
+    
+    if (tabs.length === 0) {
+      throw new Error(`No tab found for ${currentSettings.url}`);
+    }
+    
+    const targetTab = tabs[0];
+    await chrome.tabs.reload(targetTab.id);
+    await waitForTabToLoad(targetTab.id);
+    
+    const response = await chrome.tabs.sendMessage(targetTab.id, { action: 'getPageContent' });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to get page content');
+    }
+    
+    results.pageTest.success = true;
+    results.pageTest.message = 'Page monitoring test completed';
+    
+    // Show a test notification
+    const url = new URL(currentSettings.url);
+    await chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon48.png',
+      title: `🧪 Test completed on ${url.hostname}`,
+      message: results.llmTest.success ? 
+        `✓ Page monitoring and ${currentSettings.provider} LLM connectivity verified` :
+        `✓ Page monitoring verified. LLM: ${results.llmTest.message}`
+    });
+    
+  } catch (error) {
+    console.error('Page test failed:', error);
+    results.pageTest.success = false;
+    results.pageTest.message = `Page test error: ${error.message}`;
+    results.success = false;
+  }
+
+  return results;
+}
 
 // Helper function to wait for tab to finish loading
 function waitForTabToLoad(tabId, timeout = 30000) {

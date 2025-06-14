@@ -103,7 +103,34 @@ async function testNow() {
     const response = await chrome.runtime.sendMessage({ action: 'testNow' });
     console.log('Received response:', response);
     
-    if (response && response.success) {
+    if (response && response.pageTest && response.llmTest) {
+      // Enhanced response with detailed test results
+      let message = '';
+      let statusType = 'success';
+      
+      // Check page test
+      if (response.pageTest.success) {
+        message += '✓ Page monitoring working. ';
+      } else {
+        message += '✗ Page test failed. ';
+        statusType = 'error';
+      }
+      
+      // Check LLM test
+      if (response.llmTest.success) {
+        message += `✓ ${response.llmTest.provider === 'no-llm' ? 'No LLM configured' : response.llmTest.provider + ' LLM working'}.`;
+      } else {
+        message += `✗ LLM test failed: ${response.llmTest.message}.`;
+        statusType = 'error';
+      }
+      
+      if (response.success) {
+        message += ' Check notifications.';
+      }
+      
+      showStatus(message, statusType, 5000);
+    } else if (response && response.success) {
+      // Fallback for old response format
       showStatus('Test completed! Check for notifications.', 'success');
     } else {
       showStatus(`Test failed: ${response ? response.error : 'No response'}`, 'error');
