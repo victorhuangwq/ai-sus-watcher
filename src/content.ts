@@ -12,6 +12,17 @@ interface ContentResponse {
   error?: string;
 }
 
+// Simple function to ensure page is loaded
+function waitForPageComplete(): Promise<void> {
+  return new Promise((resolve) => {
+    if (document.readyState === 'complete') {
+      resolve();
+    } else {
+      setTimeout(() => resolve(), 5000);
+    }
+  });
+}
+
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request: ContentRequest, _sender: chrome.runtime.MessageSender, sendResponse: (response: ContentResponse) => void) => {
   if (request.action === 'ping') {
@@ -23,25 +34,32 @@ chrome.runtime.onMessage.addListener((request: ContentRequest, _sender: chrome.r
   if (request.action === 'getPageContent') {
     console.log('Content script: Received getPageContent request');
     
-    try {
-      // Get the full HTML content of the page
-      const pageContent = document.documentElement.outerHTML;
-      
-      // Send the content back to the background script
-      sendResponse({
-        success: true,
-        content: pageContent,
-        url: window.location.href
+    // Wait for page to be fully loaded before extracting content
+    waitForPageComplete()
+      .then(() => {
+        try {
+          // Get the full HTML content of the page
+          const pageContent = document.documentElement.outerHTML;
+          
+          // Send the content back to the background script
+          sendResponse({
+            success: true,
+            content: pageContent,
+            url: window.location.href
+          });
+          
+          console.log('Content script: Sent page content back to background');
+        } catch (error) {
+          console.error('Content script: Failed to get page content:', error);
+          sendResponse({
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
       });
-      
-      console.log('Content script: Sent page content back to background');
-    } catch (error) {
-      console.error('Content script: Failed to get page content:', error);
-      sendResponse({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
+    
+    // Return true to indicate we will respond asynchronously
+    return true;
   }
   
   // Return true to indicate we will respond asynchronously
