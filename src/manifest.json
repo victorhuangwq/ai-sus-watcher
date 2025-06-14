@@ -7,17 +7,11 @@
     "storage",
     "alarms",
     "notifications",
-    "tabs"
+    "tabs",
+    "scripting"
   ],
   "host_permissions": [
     "*://*/*"
-  ],
-  "content_scripts": [
-    {
-      "matches": ["*://*/*"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
   ],
   "background": {
     "service_worker": "background.js",

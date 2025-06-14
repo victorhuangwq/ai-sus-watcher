@@ -229,6 +229,30 @@ async function stopMonitoringDueToMissingTab() {
   }
 }
 
+async function ensureContentScriptInjected(tabId: number): Promise<void> {
+  try {
+    // Try to send a ping message to see if content script is already loaded
+    await chrome.tabs.sendMessage(tabId, { action: 'ping' });
+    console.log('Content script already loaded in tab', tabId);
+  } catch (error) {
+    // Content script not loaded, inject it
+    console.log('Injecting content script into tab', tabId);
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js']
+      });
+      console.log('Content script injected successfully');
+      
+      // Give the content script a moment to initialize
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (injectionError) {
+      console.error('Failed to inject content script:', injectionError);
+      throw new Error(`Failed to inject content script: ${injectionError instanceof Error ? injectionError.message : 'Unknown error'}`);
+    }
+  }
+}
+
 async function testNowWithLLM() {
   if (!currentSettings) {
     const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
@@ -286,6 +310,8 @@ async function testNowWithLLM() {
     await chrome.tabs.reload(targetTab.id);
     await waitForTabToLoad(targetTab.id);
     
+    // Inject content script if needed, then send message to get page content
+    await ensureContentScriptInjected(targetTab.id);
     const response = await chrome.tabs.sendMessage(targetTab.id, { action: 'getPageContent' }) as PageContentResponse;
     
     if (!response.success) {
@@ -378,7 +404,8 @@ async function checkPageChanges(forceNotification = false) {
     // Wait for the page to finish loading
     await waitForTabToLoad(targetTab.id);
     
-    // Send message to content script to get page content
+    // Inject content script if needed, then send message to get page content
+    await ensureContentScriptInjected(targetTab.id);
     const response = await chrome.tabs.sendMessage(targetTab.id, { action: 'getPageContent' }) as PageContentResponse;
     
     if (!response.success) {

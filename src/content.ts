@@ -14,6 +14,12 @@ interface ContentResponse {
 
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request: ContentRequest, _sender: chrome.runtime.MessageSender, sendResponse: (response: ContentResponse) => void) => {
+  if (request.action === 'ping') {
+    // Simple ping response to check if content script is loaded
+    sendResponse({ success: true });
+    return true;
+  }
+  
   if (request.action === 'getPageContent') {
     console.log('Content script: Received getPageContent request');
     
