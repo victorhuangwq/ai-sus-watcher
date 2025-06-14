@@ -14,20 +14,15 @@ It will:
 
 ### Installation
 
-1. **Clone or download** this repository
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-3. **Build the extension**:
-   ```bash
-   npm run build
-   ```
+1. `git clone https://github.com/victorhuangwq/ai-sus-watcher.git`
+2. `npm install`
+3. `npm run build`
 4. **Load in Chrome**:
    - Open `chrome://extensions/`
    - Enable "Developer mode" (top right)
    - Click "Load unpacked" and select the `dist/` folder
-   - The AI SUS Watcher extension should appear in your toolbar!
+  
+The AI SUS Watcher extension should appear in your toolbar!
 
 ### First Use
 
