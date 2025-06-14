@@ -2,16 +2,13 @@
 
 **By Squash**
 
-AI SUS Watcher is a Chrome extension that monitors the YC AI Startup School website (and other websites) for content changes and provides intelligent notifications with AI-powered summaries.
+AI SUS Watcher monitors the YC AI Startup School event page for you! So you don't have to worry about missing any important updates on the page :').  (Works for other pages too!)
 
-## ✨ Features
+It will:
+- Automatically check for changes every few minutes
+- Summarize changes using AI (OpenAI, Google Gemini, or Chrome's built-in AI), and you can customize the prompt
+- Notify you with a browser notification when changes are detected
 
-- 🎯 **Smart Monitoring**: Automatically polls web pages for meaningful content changes
-- 🤖 **AI-Powered Summaries**: Uses OpenAI, Google Gemini, or Chrome AI to summarize changes
-- 🔔 **Instant Notifications**: Get Chrome notifications when important updates are detected  
-- 🎛️ **Flexible Configuration**: Customize polling frequency, target URLs, and AI prompts
-- 🚫 **Privacy-First**: All data stays local - no server-side storage
-- ⚡ **Lightweight**: Efficient diff detection with SimHash pre-filtering
 
 ## 🚀 Quick Start
 
@@ -39,10 +36,15 @@ AI SUS Watcher is a Chrome extension that monitors the YC AI Startup School webs
    - **Target URL**: Default is YC AI Startup School (`https://events.ycombinator.com/ai-sus`)
    - **Polling Cadence**: How often to check (1-15 minutes)
    - **AI Prompt**: How you want changes summarized
-   - **LLM Provider**: Choose your AI service or "No LLM" for raw diffs
+   - **LLM Provider**: Choose from:
+     - **No LLM**: Just shows raw text differences
+     - **OpenAI**: Uses OpenAI's GPT-3.5-turbo
+     - **Google Gemini**: Uses Google Gemini-2.0-flash
+     - **Chrome AI**: Uses Chrome's built-in Gemini Nano (requires Chrome Beta or Dev, some settings and hardware requirements apply) (see below for details)
 3. **Add API Key** (if using OpenAI/Gemini):
-   - Get your API key from [OpenAI](https://platform.openai.com/api-keys) or [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Paste it in the API Key field
+   - Get your API key from 
+     - [OpenAI](https://platform.openai.com/api-keys) 
+     - or [Google AI Studio](https://aistudio.google.com/app/apikey) -> lot's of free calls available! 
 4. **Click "Save"** to start monitoring
 5. **Test it works** with the "Test now" button
 
@@ -50,12 +52,12 @@ AI SUS Watcher is a Chrome extension that monitors the YC AI Startup School webs
 
 ### LLM Providers
 
-| Provider | Description | Requires API Key |
-|----------|-------------|------------------|
-| **No LLM** | Shows raw text differences | ❌ |
-| **OpenAI** | Uses GPT-3.5-turbo for summaries | ✅ |
-| **Google Gemini** | Uses Gemini Pro for summaries | ✅ |
-| **Chrome AI** | Uses built-in Chrome AI (experimental) | ❌ |
+| Provider | Description | Model | Requires API Key |
+|----------|-------------|-------|------------------|
+| **No LLM** | Shows raw text differences | - | ❌ |
+| **OpenAI** | Uses OpenAI API for summaries | GPT-3.5-turbo | ✅ |
+| **Google Gemini** | Uses Google Gemini API | Gemini-2.0-flash | ✅ |
+| **Chrome AI** | Uses Chrome's built-in AI (needs Chrome Beta or Dev) | Gemini Nano | ❌ |
 
 ### Example Prompts
 
@@ -68,49 +70,55 @@ AI SUS Watcher is a Chrome extension that monitors the YC AI Startup School webs
 
 ### Dev Server
 
-A test server provides a page that automatically updates every 2 minutes:
+A test server provides a page that cycles through different AI event scenarios on each refresh:
 
 ```bash
-npm run dev
+node dev-server.js
 ```
 
 Then visit `http://localhost:8080/page` and use this as your target URL for testing.
 
 ### Testing the Extension
 
-1. **Start the dev server**: `npm run dev`
+1. **Start the dev server**: `node dev-server.js`
 2. **Set target URL** to `http://localhost:8080/page`  
 3. **Set polling cadence** to 1-2 minutes for faster testing
-4. **Watch for notifications** as the page content changes automatically
+4. **Click "Test now"** or wait for automatic polling to see notifications
+5. **Each page refresh** shows different event content (5 different scenarios)
 
 ### Project Structure
 
 ```
 ├── src/
-│   ├── manifest.json          # Chrome extension manifest
-│   ├── background.js          # Service worker (polling, diffs, notifications)
+│   ├── manifest.json          # Chrome extension manifest (Manifest V3)
+│   ├── background.js          # Service worker (polling, tab management, notifications)
+│   ├── content.js             # Content script (reads authenticated page content)
 │   ├── popup.html/css/js      # Extension popup interface
 │   ├── utils/
 │   │   └── diff.js           # Text diffing with SimHash pre-filtering
 │   ├── llm/
-│   │   ├── openai.js         # OpenAI API adapter
-│   │   ├── gemini.js         # Google Gemini API adapter  
-│   │   ├── chrome.js         # Chrome AI adapter
+│   │   ├── base.js           # Base LLM adapter class
+│   │   ├── openai.js         # OpenAI GPT-3.5-turbo API adapter
+│   │   ├── gemini.js         # Google Gemini-2.0-flash API adapter  
+│   │   ├── chrome.js         # Chrome AI (Gemini Nano) adapter
 │   │   ├── noLlm.js          # Raw diff fallback
 │   │   └── factory.js        # LLM adapter factory
-│   └── icons/                # Extension icons (add your own PNGs)
+│   └── icons/                # Extension icons
 ├── dist/                     # Built extension (generated)
-├── dev-server.js             # Test server with auto-updating content
-└── build.js                  # Build script
+├── dev-server.js             # Test server with rotating event scenarios
+└── build.js                  # Build script with dependency management
 ```
 
 ## 🔧 How It Works
 
-1. **Polling**: Chrome alarms trigger page fetches at your configured interval
-2. **Diff Detection**: SimHash algorithm pre-filters insignificant changes (≤3 bit difference)
-3. **Text Extraction**: Semantic HTML diffing extracts meaningful text changes
-4. **AI Summarization**: Selected LLM provider summarizes the changes with your prompt
-5. **Notifications**: Chrome notifications display the summary with a link to the page
+1. **Tab Management**: Extension finds the target tab using your existing browser session
+2. **Page Refresh**: Refreshes the page to get the latest server-side content  
+3. **Content Extraction**: Content script reads the authenticated page content from the DOM
+4. **Diff Detection**: SimHash algorithm pre-filters insignificant changes (≤3 bit difference)
+5. **Text Processing**: Converts HTML to text and performs word-level diffing
+6. **AI Summarization**: Selected LLM provider summarizes the changes with your custom prompt
+7. **Smart Notifications**: Chrome notifications show summaries, including test notifications
+8. **Auto-Stop**: Monitoring automatically stops when target tab is closed
 
 ## 🛡️ Privacy & Security
 
@@ -131,10 +139,11 @@ Then visit `http://localhost:8080/page` and use this as your target URL for test
 2. Create a new API key
 3. Copy and paste into the extension
 
-### Chrome AI
-- Available in Chrome Canary with experimental flags enabled
-- No API key required
-- May have limited availability
+### Chrome AI (Built-in)
+1. **Enable in Chrome**: Go to `chrome://flags/#prompt-api-for-gemini-nano`
+2. **Download Model**: May need to visit `chrome://components/` and update "Optimization Guide On Device Model"  
+3. **No API Key**: Uses Chrome's built-in Gemini Nano model
+4. **Hardware Requirements**: Requires compatible device with sufficient resources
 
 ## 🚀 Usage Examples
 
@@ -160,26 +169,27 @@ Then visit `http://localhost:8080/page` and use this as your target URL for test
 - Check that Developer mode is enabled in `chrome://extensions/`
 
 **No notifications appearing?**
-- Verify Chrome notifications are enabled for the extension
-- Check the console in `chrome://extensions/` for errors
-- Try the "Test now" button to trigger a manual check
+- Enable Chrome notifications: Go to `chrome://settings/content/notifications`
+- Check the service worker console in `chrome://extensions/` for errors
+- Try the "Test now" button - it should always show a notification
+- Verify the target page is open in a tab
+- Ensure that notifications are not blocked for your browser (that's what happene to me!)
+
+**Monitoring stops unexpectedly?**
+- Extension automatically stops when target tab is closed (this is intentional)  
+- Click extension icon to reopen target page and resume monitoring
+- Check service worker logs for "No target tab found, stopping monitoring"
 
 **LLM not working?**
-- Verify your API key is correct and has credit/quota
-- Try switching to "No LLM" mode to see raw diffs
-- Check browser console for API error messages
+- **OpenAI/Gemini**: Verify API key is correct and has credit/quota
+- **Chrome AI**: Enable `chrome://flags/#prompt-api-for-gemini-nano` and download model
+- Try switching to "No LLM" mode to see raw diffs first
+- Check service worker console for detailed LLM error messages
 
-**False positives/negatives?**
-- Adjust the diff sensitivity by modifying the SimHash threshold in `src/utils/diff.js`
-- Refine your AI prompt to focus on specific types of changes
-
-## 🏗️ Building for Production
-
-1. **Add real icons**: Replace placeholder icons in `src/icons/` with actual PNG files
-2. **Test thoroughly**: Use the dev server and various websites
-3. **Update manifest**: Ensure version numbers and permissions are correct
-4. **Build**: `npm run build`
-5. **Package**: Zip the `dist/` folder for distribution
+**Page refresh issues?**
+- Extension intentionally refreshes pages to get latest content
+- Content script communication may fail temporarily during refresh
+- This is normal behavior - monitoring will resume after page loads
 
 ## 📄 License
 
