@@ -1,6 +1,6 @@
 {
   "name": "ai-sus-watcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AI SUS Watcher - Chrome extension to monitor YC AI Startup School and other websites for changes with AI-powered summaries",
   "main": "background.js",
   "scripts": {

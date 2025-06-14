@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI SUS Watcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Monitor YC AI Startup School and other websites for changes with AI-powered summaries. By Squash.",
   "permissions": [
     "storage",
