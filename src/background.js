@@ -87,6 +87,37 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
+// Helper function to wait for tab to finish loading
+function waitForTabToLoad(tabId, timeout = 30000) {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      chrome.tabs.onUpdated.removeListener(listener);
+      reject(new Error('Timeout waiting for tab to load'));
+    }, timeout);
+    
+    const listener = (updatedTabId, changeInfo, tab) => {
+      if (updatedTabId === tabId && changeInfo.status === 'complete') {
+        clearTimeout(timeoutId);
+        chrome.tabs.onUpdated.removeListener(listener);
+        resolve();
+      }
+    };
+    
+    chrome.tabs.onUpdated.addListener(listener);
+    
+    // Also check if tab is already loaded
+    chrome.tabs.get(tabId).then((tab) => {
+      if (tab.status === 'complete') {
+        clearTimeout(timeoutId);
+        chrome.tabs.onUpdated.removeListener(listener);
+        resolve();
+      }
+    }).catch(() => {
+      // Tab might not exist, let the timeout handle it
+    });
+  });
+}
+
 async function checkPageChanges(forceNotification = false) {
   if (!currentSettings) {
     const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
@@ -94,16 +125,31 @@ async function checkPageChanges(forceNotification = false) {
   }
 
   try {
-    const response = await fetch(currentSettings.url, {
-      method: 'GET',
-      cache: 'no-cache'
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // Find the tab with the target URL
+    const tabs = await chrome.tabs.query({ url: currentSettings.url });
+    
+    if (tabs.length === 0) {
+      throw new Error(`No tab found for ${currentSettings.url}. Please open the page first.`);
     }
-
-    const newContent = await response.text();
+    
+    const targetTab = tabs[0];
+    console.log('Found target tab:', targetTab.id);
+    
+    // Refresh the page to get latest content
+    console.log('Refreshing page to get latest content...');
+    await chrome.tabs.reload(targetTab.id);
+    
+    // Wait for the page to finish loading
+    await waitForTabToLoad(targetTab.id);
+    
+    // Send message to content script to get page content
+    const response = await chrome.tabs.sendMessage(targetTab.id, { action: 'getPageContent' });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Failed to get page content from content script');
+    }
+    
+    const newContent = response.content;
     const previousSnapshot = currentSettings.snapshot;
 
     if (!previousSnapshot) {
@@ -119,11 +165,21 @@ async function checkPageChanges(forceNotification = false) {
       currentSettings.snapshot = newContent;
 
       let summary;
+      console.log('Diff detected, length:', diff.length);
+      console.log('Diff content preview:', diff.slice(0, 200) + '...');
+      console.log('LLM Provider:', currentSettings.provider);
+      console.log('Has API Key:', !!currentSettings.apiKey);
+      
       try {
         const llmAdapter = createLLMAdapter(currentSettings.provider, currentSettings.apiKey);
+        console.log('LLM Adapter created successfully');
+        console.log('Calling LLM with prompt:', currentSettings.prompt);
+        
         summary = await llmAdapter.summarize(diff, currentSettings.prompt);
+        console.log('LLM summarization successful, result:', summary);
       } catch (error) {
         console.error('LLM summarization failed:', error);
+        console.log('Falling back to raw diff slice');
         summary = diff.slice(0, 180) + (diff.length > 180 ? '...' : '');
       }
 
@@ -150,10 +206,9 @@ async function checkPageChanges(forceNotification = false) {
     
     await chrome.notifications.create({
       type: 'basic',
-      iconUrl: 'icons/icon.svg',
+      iconUrl: 'icons/icon48.png',
       title: '⚠️ AI SUS Watcher Error',
-      message: `Failed to check ${currentSettings.url}: ${error.message}`,
-      requireInteraction: false
+      message: `Failed to check ${currentSettings.url}: ${error.message}`
     });
   }
 }

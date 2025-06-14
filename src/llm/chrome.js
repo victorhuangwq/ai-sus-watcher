@@ -7,30 +7,67 @@ export class ChromeAIAdapter extends BaseLLMAdapter {
   }
 
   async initialize() {
-    if (!('ai' in self) || !('languageModel' in self.ai)) {
-      throw new Error('Chrome AI not available');
+    // Check if Chrome AI is available (following official sample pattern)
+    if (!('LanguageModel' in self)) {
+      throw new Error('Chrome AI Prompt API not available. Please enable it in chrome://flags/#prompt-api-for-gemini-nano');
     }
 
     try {
-      this.session = await self.ai.languageModel.create({
-        temperature: 0.7,
-        topK: 3
+      // Get default parameters
+      const defaults = await LanguageModel.params();
+      console.log('Chrome AI defaults:', defaults);
+
+      // Create session with default parameters (following sample pattern)
+      this.session = await LanguageModel.create({
+        temperature: defaults.defaultTemperature,
+        topK: defaults.defaultTopK
       });
+      
+      console.log('Chrome AI session created successfully');
     } catch (error) {
-      throw new Error('Failed to initialize Chrome AI session');
+      console.error('Chrome AI initialization error:', error);
+      this.reset();
+      throw new Error(`Failed to initialize Chrome AI: ${error.message}`);
+    }
+  }
+
+  reset() {
+    if (this.session) {
+      this.session.destroy();
+      this.session = null;
+    }
+  }
+
+  async runPrompt(prompt) {
+    try {
+      if (!this.session) {
+        await this.initialize();
+      }
+      return await this.session.prompt(prompt);
+    } catch (error) {
+      console.error('Chrome AI prompt error:', error);
+      this.reset();
+      throw error;
     }
   }
 
   async summarize(diff, prompt) {
-    if (!this.session) {
-      await this.initialize();
-    }
-
     try {
-      const response = await this.session.prompt(`${prompt}\n\nChanges detected:\n${diff}`);
-      return response.trim() || 'Unable to summarize changes';
+      const fullPrompt = `${prompt}\n\nChanges detected:\n${diff}`;
+
+      console.log('Sending prompt to Chrome AI...');
+      const response = await this.runPrompt(fullPrompt);
+      console.log('Chrome AI response received:', response);
+      
+      return response?.trim() || 'Unable to summarize changes';
     } catch (error) {
-      throw new Error('Chrome AI summarization failed');
+      console.error('Chrome AI summarization failed:', error);
+      throw new Error(`Chrome AI summarization failed: ${error.message}`);
     }
+  }
+
+  // Clean up resources
+  destroy() {
+    this.reset();
   }
 }
