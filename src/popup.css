@@ -21,23 +21,108 @@ body {
 }
 
 .header {
-  text-align: center;
   margin-bottom: 20px;
   padding-bottom: 15px;
   border-bottom: 1px solid #e9ecef;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .header h1 {
   font-size: 18px;
   font-weight: 600;
   color: #2c3e50;
-  margin-bottom: 5px;
+  margin: 0;
+}
+
+.monitoring-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.monitoring-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+.status-indicator.active {
+  background-color: #28a745;
+  box-shadow: 0 0 6px rgba(40, 167, 69, 0.4);
+}
+
+.status-indicator.inactive {
+  background-color: #dc3545;
+}
+
+.monitoring-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: #f8f9fa;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  font-size: 12px;
+  position: relative;
+}
+
+.monitoring-btn:hover {
+  background: #e9ecef;
+  color: #2c3e50;
+}
+
+.monitoring-btn.active {
+  background: #28a745;
+  color: white;
+}
+
+.monitoring-btn.active:hover {
+  background: #218838;
+}
+
+.monitoring-btn .play-icon,
+.monitoring-btn .stop-icon {
+  transition: opacity 0.2s ease;
+  position: absolute;
+}
+
+.monitoring-btn .stop-icon {
+  opacity: 0;
+}
+
+.monitoring-btn.active .play-icon {
+  opacity: 0;
+}
+
+.monitoring-btn.active .stop-icon {
+  opacity: 1;
 }
 
 .by-squash {
   font-size: 12px;
   color: #6c757d;
   font-style: italic;
+  text-align: center;
 }
 
 .form-section {

@@ -9,7 +9,19 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>🔔 AI SUS Watcher</h1>
+      <div class="header-top">
+        <h1>🔔 AI SUS Watcher</h1>
+        <div class="monitoring-controls">
+          <div class="monitoring-status">
+            <span id="monitoring-status-text">Monitoring inactive</span>
+            <div id="monitoring-indicator" class="status-indicator inactive"></div>
+          </div>
+          <button id="monitoring-toggle" class="monitoring-btn" title="Start monitoring">
+            <span class="play-icon">▶</span>
+            <span class="stop-icon">⏸</span>
+          </button>
+        </div>
+      </div>
       <div class="by-squash">by Squash</div>
     </div>
     

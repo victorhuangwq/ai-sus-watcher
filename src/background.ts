@@ -9,6 +9,7 @@ interface Settings {
   provider: LLMProvider;
   apiKey: string;
   snapshot: string;
+  monitoringActive: boolean;
   [key: string]: any;
 }
 
@@ -26,7 +27,8 @@ const DEFAULT_SETTINGS: Settings = {
   prompt: 'Tell me the important changes in 2 sentences',
   provider: 'no-llm',
   apiKey: '',
-  snapshot: ''
+  snapshot: '',
+  monitoringActive: false
 };
 
 let currentSettings: Settings | null = null;
@@ -59,7 +61,7 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         settingsChanged = true;
       }
     }
-    if (settingsChanged && changes.cadence) {
+    if (settingsChanged && (changes.cadence || changes.monitoringActive)) {
       setupAlarm();
     }
   }
@@ -67,11 +69,18 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 function setupAlarm() {
   if (!currentSettings) return;
+  
   chrome.alarms.clear('pageCheck');
-  chrome.alarms.create('pageCheck', {
-    delayInMinutes: currentSettings.cadence,
-    periodInMinutes: currentSettings.cadence
-  });
+  
+  if (currentSettings.monitoringActive) {
+    chrome.alarms.create('pageCheck', {
+      delayInMinutes: currentSettings.cadence,
+      periodInMinutes: currentSettings.cadence
+    });
+    console.log('Monitoring alarm set for', currentSettings.cadence, 'minutes');
+  } else {
+    console.log('Monitoring is inactive, no alarm set');
+  }
 }
 
 chrome.alarms.onAlarm.addListener((alarm) => {
@@ -120,8 +129,105 @@ chrome.runtime.onMessage.addListener((request: any, _sender: chrome.runtime.Mess
     });
     return true;
   }
+  
+  if (request.action === 'startMonitoring') {
+    console.log('Starting monitoring');
+    startMonitoring().then((result) => {
+      sendResponse(result);
+    }).catch((error) => {
+      console.error('Failed to start monitoring:', error);
+      sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    });
+    return true;
+  }
+  
+  if (request.action === 'stopMonitoring') {
+    console.log('Stopping monitoring');
+    stopMonitoring().then((result) => {
+      sendResponse(result);
+    }).catch((error) => {
+      console.error('Failed to stop monitoring:', error);
+      sendResponse({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+    });
+    return true;
+  }
+  
   return false;
 });
+
+async function startMonitoring() {
+  if (!currentSettings) {
+    const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
+    currentSettings = { ...DEFAULT_SETTINGS, ...stored };
+  }
+  
+  try {
+    // Update the monitoring state
+    currentSettings.monitoringActive = true;
+    await chrome.storage.local.set({ monitoringActive: true });
+    
+    // Set up the alarm
+    setupAlarm();
+    
+    console.log('Monitoring started successfully');
+    return { success: true, message: 'Monitoring started' };
+  } catch (error) {
+    console.error('Failed to start monitoring:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+async function stopMonitoring() {
+  if (!currentSettings) {
+    const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
+    currentSettings = { ...DEFAULT_SETTINGS, ...stored };
+  }
+  
+  try {
+    // Update the monitoring state
+    currentSettings.monitoringActive = false;
+    await chrome.storage.local.set({ monitoringActive: false });
+    
+    // Clear the alarm
+    chrome.alarms.clear('pageCheck');
+    
+    console.log('Monitoring stopped successfully');
+    return { success: true, message: 'Monitoring stopped' };
+  } catch (error) {
+    console.error('Failed to stop monitoring:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+async function stopMonitoringDueToMissingTab() {
+  if (!currentSettings) {
+    const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
+    currentSettings = { ...DEFAULT_SETTINGS, ...stored };
+  }
+  
+  try {
+    // Update the monitoring state
+    currentSettings.monitoringActive = false;
+    await chrome.storage.local.set({ monitoringActive: false });
+    
+    // Clear the alarm
+    chrome.alarms.clear('pageCheck');
+    
+    console.log('Monitoring stopped due to missing target tab');
+    
+    // Show notification to inform user
+    const url = new URL(currentSettings.url);
+    await chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icons/icon48.png',
+      title: '⏸️ AI SUS Watcher - Monitoring Stopped',
+      message: `Monitoring stopped because the tab for ${url.hostname} was closed.`
+    });
+    
+  } catch (error) {
+    console.error('Failed to stop monitoring due to missing tab:', error);
+  }
+}
 
 async function testNowWithLLM() {
   if (!currentSettings) {
@@ -254,7 +360,7 @@ async function checkPageChanges(forceNotification = false) {
     
     if (tabs.length === 0) {
       console.log(`No target tab found, stopping monitoring for ${currentSettings.url}`);
-      chrome.alarms.clear('pageCheck');
+      await stopMonitoringDueToMissingTab();
       return;
     }
     

@@ -5,6 +5,7 @@ interface Settings {
   provider: string;
   apiKey: string;
   snapshot: string;
+  monitoringActive: boolean;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -13,7 +14,8 @@ const DEFAULT_SETTINGS: Settings = {
   prompt: 'Tell me the important changes in 2 sentences',
   provider: 'no-llm',
   apiKey: '',
-  snapshot: ''
+  snapshot: '',
+  monitoringActive: false
 };
 
 interface ElementRefs {
@@ -27,6 +29,9 @@ interface ElementRefs {
   saveBtn: HTMLButtonElement;
   testBtn: HTMLButtonElement;
   status: HTMLElement;
+  monitoringToggle: HTMLButtonElement;
+  monitoringStatusText: HTMLElement;
+  monitoringIndicator: HTMLElement;
 }
 
 const elements: ElementRefs = {
@@ -39,7 +44,10 @@ const elements: ElementRefs = {
   apiKeySection: document.getElementById('api-key-section') as HTMLElement,
   saveBtn: document.getElementById('save-btn') as HTMLButtonElement,
   testBtn: document.getElementById('test-btn') as HTMLButtonElement,
-  status: document.getElementById('status') as HTMLElement
+  status: document.getElementById('status') as HTMLElement,
+  monitoringToggle: document.getElementById('monitoring-toggle') as HTMLButtonElement,
+  monitoringStatusText: document.getElementById('monitoring-status-text') as HTMLElement,
+  monitoringIndicator: document.getElementById('monitoring-indicator') as HTMLElement
 };
 
 async function loadSettings() {
@@ -64,6 +72,7 @@ async function loadSettings() {
   });
   
   updateApiKeyVisibility();
+  updateMonitoringStatus(settings.monitoringActive);
 }
 
 function updateApiKeyVisibility() {
@@ -71,6 +80,45 @@ function updateApiKeyVisibility() {
   const needsApiKey = selectedProvider === 'openai' || selectedProvider === 'gemini';
   
   elements.apiKeySection.style.display = needsApiKey ? 'block' : 'none';
+}
+
+function updateMonitoringStatus(isActive: boolean) {
+  elements.monitoringStatusText.textContent = isActive ? 'Monitoring active' : 'Monitoring inactive';
+  
+  if (isActive) {
+    elements.monitoringIndicator.classList.remove('inactive');
+    elements.monitoringIndicator.classList.add('active');
+    elements.monitoringToggle.classList.add('active');
+    elements.monitoringToggle.title = 'Stop monitoring';
+  } else {
+    elements.monitoringIndicator.classList.remove('active');
+    elements.monitoringIndicator.classList.add('inactive');
+    elements.monitoringToggle.classList.remove('active');
+    elements.monitoringToggle.title = 'Start monitoring';
+  }
+}
+
+async function toggleMonitoring() {
+  const settings = await chrome.storage.local.get(DEFAULT_SETTINGS);
+  const newState = !settings.monitoringActive;
+  
+  try {
+    // Send message to background script to start/stop monitoring
+    const response = await chrome.runtime.sendMessage({ 
+      action: newState ? 'startMonitoring' : 'stopMonitoring' 
+    });
+    
+    if (response && response.success) {
+      await chrome.storage.local.set({ monitoringActive: newState });
+      updateMonitoringStatus(newState);
+      showStatus(newState ? 'Monitoring started' : 'Monitoring stopped', 'success');
+    } else {
+      showStatus(`Failed to ${newState ? 'start' : 'stop'} monitoring: ${response?.error || 'Unknown error'}`, 'error');
+    }
+  } catch (error) {
+    console.error('Failed to toggle monitoring:', error);
+    showStatus(`Failed to ${newState ? 'start' : 'stop'} monitoring: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+  }
 }
 
 function showStatus(message: string, type: 'info' | 'success' | 'error' = 'info', duration: number = 3000): void {
@@ -182,6 +230,7 @@ elements.providers.forEach(radio => {
 
 elements.saveBtn.addEventListener('click', saveSettings);
 elements.testBtn.addEventListener('click', testNow);
+elements.monitoringToggle.addEventListener('click', toggleMonitoring);
 
 elements.url.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') {
