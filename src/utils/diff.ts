@@ -1,6 +1,13 @@
+// @ts-ignore - diff library doesn't have type definitions  
 import { diffWordsWithSpace } from '../lib/diff.js';
 
-function textFromHtml(html) {
+interface DiffPart {
+  added?: boolean;
+  removed?: boolean;
+  value: string;
+}
+
+function textFromHtml(html: string): string {
   // Simple HTML tag removal for service worker environment
   return html
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
@@ -16,7 +23,7 @@ function textFromHtml(html) {
     .trim(); // Remove leading/trailing whitespace
 }
 
-function simpleHash(text) {
+function simpleHash(text: string): number {
   let hash = 0;
   for (let i = 0; i < text.length; i++) {
     const char = text.charCodeAt(i);
@@ -26,7 +33,7 @@ function simpleHash(text) {
   return hash;
 }
 
-function hammingDistance(hash1, hash2) {
+function hammingDistance(hash1: number, hash2: number): number {
   let xor = hash1 ^ hash2;
   let distance = 0;
   while (xor !== 0) {
@@ -36,7 +43,7 @@ function hammingDistance(hash1, hash2) {
   return distance;
 }
 
-export async function computeDiff(prevHtml, newHtml) {
+export async function computeDiff(prevHtml: string, newHtml: string): Promise<string | null> {
   const prevText = textFromHtml(prevHtml);
   const newText = textFromHtml(newHtml);
   
@@ -47,7 +54,7 @@ export async function computeDiff(prevHtml, newHtml) {
     return null;
   }
   
-  const diff = diffWordsWithSpace(prevText, newText)
+  const diff = (diffWordsWithSpace(prevText, newText) as DiffPart[])
     .filter(part => part.added || part.removed)
     .map(part => (part.added ? '+ ' : '- ') + part.value.trim())
     .filter(part => part.length > 2)

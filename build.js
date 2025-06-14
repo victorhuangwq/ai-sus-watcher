@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const srcDir = path.join(__dirname, 'src');
 const distDir = path.join(__dirname, 'dist');
 
-function copyDir(src, dest) {
+function copyStaticFiles(src, dest) {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
   }
@@ -16,9 +17,12 @@ function copyDir(src, dest) {
     const destPath = path.join(dest, entry);
 
     if (fs.statSync(srcPath).isDirectory()) {
-      copyDir(srcPath, destPath);
+      copyStaticFiles(srcPath, destPath);
     } else {
-      fs.copyFileSync(srcPath, destPath);
+      // Only copy non-TypeScript files
+      if (!entry.endsWith('.ts')) {
+        fs.copyFileSync(srcPath, destPath);
+      }
     }
   }
 }
@@ -38,11 +42,25 @@ data:image/svg+xml;base64,${Buffer.from(svgContent).toString('base64')}`;
 
 console.log('🔨 Building AI SUS Watcher extension...');
 
-if (fs.existsSync(distDir)) {
-  fs.rmSync(distDir, { recursive: true });
+// Compile TypeScript first
+console.log('📦 Compiling TypeScript...');
+try {
+  execSync('npx tsc', { stdio: 'inherit' });
+  console.log('✅ TypeScript compilation successful!');
+} catch (error) {
+  console.error('❌ TypeScript compilation failed:', error.message);
+  process.exit(1);
 }
 
-copyDir(srcDir, distDir);
+// Copy non-TypeScript files (HTML, CSS, JSON, etc.)
+console.log('📁 Copying static files...');
+if (fs.existsSync(distDir)) {
+  // Don't remove dist directory, just copy static files
+  copyStaticFiles(srcDir, distDir);
+} else {
+  fs.mkdirSync(distDir, { recursive: true });
+  copyStaticFiles(srcDir, distDir);
+}
 
 // Copy diff library
 const diffSourcePath = path.join(__dirname, 'node_modules', 'diff', 'lib', 'index.es6.js');

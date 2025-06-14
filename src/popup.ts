@@ -1,4 +1,13 @@
-const DEFAULT_SETTINGS = {
+interface Settings {
+  url: string;
+  cadence: number;
+  prompt: string;
+  provider: string;
+  apiKey: string;
+  snapshot: string;
+}
+
+const DEFAULT_SETTINGS: Settings = {
   url: 'https://events.ycombinator.com/ai-sus',
   cadence: 5,
   prompt: 'Tell me the important changes in 2 sentences',
@@ -7,17 +16,30 @@ const DEFAULT_SETTINGS = {
   snapshot: ''
 };
 
-const elements = {
-  url: document.getElementById('url'),
-  cadence: document.getElementById('cadence'),
-  cadenceValue: document.getElementById('cadence-value'),
-  prompt: document.getElementById('prompt'),
-  providers: document.querySelectorAll('input[name="provider"]'),
-  apiKey: document.getElementById('api-key'),
-  apiKeySection: document.getElementById('api-key-section'),
-  saveBtn: document.getElementById('save-btn'),
-  testBtn: document.getElementById('test-btn'),
-  status: document.getElementById('status')
+interface ElementRefs {
+  url: HTMLInputElement;
+  cadence: HTMLInputElement;
+  cadenceValue: HTMLElement;
+  prompt: HTMLTextAreaElement;
+  providers: NodeListOf<HTMLInputElement>;
+  apiKey: HTMLInputElement;
+  apiKeySection: HTMLElement;
+  saveBtn: HTMLButtonElement;
+  testBtn: HTMLButtonElement;
+  status: HTMLElement;
+}
+
+const elements: ElementRefs = {
+  url: document.getElementById('url') as HTMLInputElement,
+  cadence: document.getElementById('cadence') as HTMLInputElement,
+  cadenceValue: document.getElementById('cadence-value') as HTMLElement,
+  prompt: document.getElementById('prompt') as HTMLTextAreaElement,
+  providers: document.querySelectorAll('input[name="provider"]') as NodeListOf<HTMLInputElement>,
+  apiKey: document.getElementById('api-key') as HTMLInputElement,
+  apiKeySection: document.getElementById('api-key-section') as HTMLElement,
+  saveBtn: document.getElementById('save-btn') as HTMLButtonElement,
+  testBtn: document.getElementById('test-btn') as HTMLButtonElement,
+  status: document.getElementById('status') as HTMLElement
 };
 
 async function loadSettings() {
@@ -45,13 +67,13 @@ async function loadSettings() {
 }
 
 function updateApiKeyVisibility() {
-  const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
+  const selectedProvider = (document.querySelector('input[name="provider"]:checked') as HTMLInputElement).value;
   const needsApiKey = selectedProvider === 'openai' || selectedProvider === 'gemini';
   
   elements.apiKeySection.style.display = needsApiKey ? 'block' : 'none';
 }
 
-function showStatus(message, type = 'info', duration = 3000) {
+function showStatus(message: string, type: 'info' | 'success' | 'error' = 'info', duration: number = 3000): void {
   elements.status.textContent = message;
   elements.status.className = `status ${type}`;
   elements.status.style.display = 'block';
@@ -62,7 +84,7 @@ function showStatus(message, type = 'info', duration = 3000) {
 }
 
 async function saveSettings() {
-  const selectedProvider = document.querySelector('input[name="provider"]:checked').value;
+  const selectedProvider = (document.querySelector('input[name="provider"]:checked') as HTMLInputElement).value;
   const needsApiKey = selectedProvider === 'openai' || selectedProvider === 'gemini';
   
   if (needsApiKey && !elements.apiKey.value.trim()) {
@@ -128,7 +150,7 @@ async function testNow() {
         message += ' Check notifications.';
       }
       
-      showStatus(message, statusType, 5000);
+      showStatus(message, statusType as 'success' | 'error', 5000);
     } else if (response && response.success) {
       // Fallback for old response format
       showStatus('Test completed! Check for notifications.', 'success');
@@ -137,7 +159,7 @@ async function testNow() {
     }
   } catch (error) {
     console.error('Test failed with error:', error);
-    showStatus(`Test failed: ${error.message}`, 'error');
+    showStatus(`Test failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
   }
   
   elements.testBtn.disabled = false;

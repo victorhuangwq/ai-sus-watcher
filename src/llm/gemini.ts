@@ -1,21 +1,24 @@
 import { BaseLLMAdapter } from './base.js';
+import { GeminiRequest, GeminiResponse } from './types.js';
 
 const GEMINI_MODEL = 'gemini-2.0-flash';
 
 export class GeminiAdapter extends BaseLLMAdapter {
-  constructor(apiKey) {
+  private apiKey: string;
+
+  constructor(apiKey: string) {
     super();
     this.apiKey = apiKey;
   }
 
-  async summarize(diff, prompt) {
+  async summarize(diff: string, prompt: string): Promise<string> {
     if (!this.apiKey) {
       throw new Error('Gemini API key required');
     }
 
     const fullPrompt = `${prompt}\n\nChanges detected:\n${diff}`;
     
-    const request = {
+    const request: GeminiRequest = {
       contents: [{
         parts: [{
           text: fullPrompt
@@ -44,14 +47,14 @@ export class GeminiAdapter extends BaseLLMAdapter {
         throw new Error(`Gemini API error: ${response.status} ${errorText}`);
       }
 
-      const data = await response.json();
+      const data: GeminiResponse = await response.json();
       console.log('Gemini API response received');
       
       return data.candidates[0]?.content?.parts[0]?.text?.trim() || 'Unable to summarize changes';
       
     } catch (error) {
       console.error('Error generating Gemini summary:', error);
-      throw new Error(`Gemini summarization failed: ${error.message}`);
+      throw new Error(`Gemini summarization failed: ${(error as Error).message}`);
     }
   }
 }

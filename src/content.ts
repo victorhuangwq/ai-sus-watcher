@@ -1,8 +1,19 @@
 // Content script for AI SUS Watcher
 // Runs in the context of web pages to read authenticated content
 
+interface ContentRequest {
+  action: string;
+}
+
+interface ContentResponse {
+  success: boolean;
+  content?: string;
+  url?: string;
+  error?: string;
+}
+
 // Listen for messages from the background script
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request: ContentRequest, _sender: chrome.runtime.MessageSender, sendResponse: (response: ContentResponse) => void) => {
   if (request.action === 'getPageContent') {
     console.log('Content script: Received getPageContent request');
     
@@ -22,7 +33,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.error('Content script: Failed to get page content:', error);
       sendResponse({
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }

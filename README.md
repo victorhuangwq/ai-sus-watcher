@@ -65,6 +65,29 @@ The AI SUS Watcher extension should appear in your toolbar!
 - `"What venue or schedule updates happened?"`
 - `"Give me bullet points of what changed"`
 
+
+## Troubleshooting
+
+**No notifications appearing?**
+
+- Try the "Test now" button - it should always show a notification
+- Ensure that notifications are not blocked for your browser (that's what happened to me!) (Settings > Notifications on Mac OS X or System > Notifications on Windows)
+- Check the service worker console in `chrome://extensions/` for errors
+
+**Extension not loading?**
+- Make sure you built it first: `npm run build`
+- Check that Developer mode is enabled in `chrome://extensions/`
+
+**Monitoring stops unexpectedly?**
+- Extension automatically stops when target tab is closed (this is intentional)  
+- Click extension icon to reopen target page and resume monitoring
+
+**LLM not working?**
+- **OpenAI/Gemini**: Verify API key is correct and has credit/quota
+- **Chrome AI**: Enable `chrome://flags/#prompt-api-for-gemini-nano` and download model
+- Try switching to "No LLM" mode to see raw diffs first
+- Check service worker console for detailed LLM error messages
+
 ## Development & Testing
 
 ### Building the Extension
@@ -88,28 +111,6 @@ Then visit `http://localhost:8080/page` and use this as your target URL for test
 - **No Servers**: No data sent to external servers except direct LLM API calls
 - **API Keys**: Stored locally and only used for your chosen LLM provider
 - **Permissions**: Only requests necessary Chrome permissions (storage, alarms, notifications, tabs)
-
-## Troubleshooting
-
-**Extension not loading?**
-- Make sure you built it first: `npm run build`
-- Check that Developer mode is enabled in `chrome://extensions/`
-**No notifications appearing?**
-- Enable Chrome notifications: Go to `chrome://settings/content/notifications`
-- Check the service worker console in `chrome://extensions/` for errors
-- Try the "Test now" button - it should always show a notification
-- Verify the target page is open in a tab
-- Ensure that notifications are not blocked for your browser (that's what happened to me!)
-
-**Monitoring stops unexpectedly?**
-- Extension automatically stops when target tab is closed (this is intentional)  
-- Click extension icon to reopen target page and resume monitoring
-
-**LLM not working?**
-- **OpenAI/Gemini**: Verify API key is correct and has credit/quota
-- **Chrome AI**: Enable `chrome://flags/#prompt-api-for-gemini-nano` and download model
-- Try switching to "No LLM" mode to see raw diffs first
-- Check service worker console for detailed LLM error messages
 
 ## License
 
