@@ -454,15 +454,18 @@ async function checkPageChanges(forceNotification = false) {
         title: `📰 Update detected on ${url.hostname}`,
         message: summary.slice(0, 180)
       });
-    } else if (forceNotification) {
-      const url = new URL(currentSettings.url);
-      
-      await chrome.notifications.create({
-        type: 'basic',
-        iconUrl: 'icons/icon48.png',
-        title: `🔍 Test completed on ${url.hostname}`,
-        message: 'No changes detected at this time.'
-      });
+    } else {
+      console.log('No changes detected on', currentSettings.url);
+      if (forceNotification) {
+        const url = new URL(currentSettings.url);
+        
+        await chrome.notifications.create({
+          type: 'basic',
+          iconUrl: 'icons/icon48.png',
+          title: `🔍 Test completed on ${url.hostname}`,
+          message: 'No changes detected at this time.'
+        });
+      }
     }
   } catch (error) {
     console.error('Page check failed:', error);
