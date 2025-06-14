@@ -1,9 +1,19 @@
-import { diffWordsWithSpace } from 'diff';
+import { diffWordsWithSpace } from '../lib/diff.js';
 
 function textFromHtml(html) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  return doc.body.textContent || doc.body.innerText || '';
+  // Simple HTML tag removal for service worker environment
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // Remove style tags
+    .replace(/<[^>]*>/g, ' ') // Remove all HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with spaces
+    .replace(/&amp;/g, '&') // Replace &amp; with &
+    .replace(/&lt;/g, '<') // Replace &lt; with <
+    .replace(/&gt;/g, '>') // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'") // Replace &#39; with '
+    .replace(/\s+/g, ' ') // Collapse multiple whitespace
+    .trim(); // Remove leading/trailing whitespace
 }
 
 function simpleHash(text) {

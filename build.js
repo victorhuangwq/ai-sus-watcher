@@ -44,15 +44,35 @@ if (fs.existsSync(distDir)) {
 
 copyDir(srcDir, distDir);
 
+// Copy diff library
+const diffSourcePath = path.join(__dirname, 'node_modules', 'diff', 'lib', 'index.es6.js');
+const diffDestPath = path.join(distDir, 'lib', 'diff.js');
+if (!fs.existsSync(path.dirname(diffDestPath))) {
+  fs.mkdirSync(path.dirname(diffDestPath), { recursive: true });
+}
+fs.copyFileSync(diffSourcePath, diffDestPath);
+
 const iconsDir = path.join(distDir, 'icons');
 if (!fs.existsSync(iconsDir)) {
   fs.mkdirSync(iconsDir, { recursive: true });
 }
 
-const iconSizes = [16, 32, 48, 128];
-iconSizes.forEach(size => {
-  createSimpleIcon(size, path.join(iconsDir, `icon${size}.png`));
-});
+// Copy the favicon.png to use as extension icons
+const faviconPath = path.join(__dirname, 'favicon.png');
+if (fs.existsSync(faviconPath)) {
+  const iconSizes = [16, 32, 48, 128];
+  iconSizes.forEach(size => {
+    const iconPath = path.join(iconsDir, `icon${size}.png`);
+    fs.copyFileSync(faviconPath, iconPath);
+    console.log(`Copied favicon.png to ${iconPath}`);
+  });
+} else {
+  // Fallback to generated icons if favicon.png doesn't exist
+  const iconSizes = [16, 32, 48, 128];
+  iconSizes.forEach(size => {
+    createSimpleIcon(size, path.join(iconsDir, `icon${size}.png`));
+  });
+}
 
 console.log('✅ Extension built successfully!');
 console.log('📁 Output directory: ./dist');

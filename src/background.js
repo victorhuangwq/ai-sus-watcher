@@ -73,17 +73,21 @@ chrome.action.onClicked.addListener(async () => {
 });
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('Received message:', request);
   if (request.action === 'testNow') {
-    checkPageChanges().then(() => {
+    console.log('Processing testNow request');
+    checkPageChanges(true).then(() => {
+      console.log('Test completed successfully');
       sendResponse({ success: true });
     }).catch((error) => {
+      console.error('Test failed:', error);
       sendResponse({ success: false, error: error.message });
     });
     return true;
   }
 });
 
-async function checkPageChanges() {
+async function checkPageChanges(forceNotification = false) {
   if (!currentSettings) {
     const stored = await chrome.storage.local.get(DEFAULT_SETTINGS);
     currentSettings = { ...DEFAULT_SETTINGS, ...stored };
@@ -127,11 +131,18 @@ async function checkPageChanges() {
       
       await chrome.notifications.create({
         type: 'basic',
-        iconUrl: 'icons/icon.svg',
+        iconUrl: 'icons/icon48.png',
         title: `📰 Update detected on ${url.hostname}`,
-        message: summary.slice(0, 180),
-        buttons: [{ title: 'Open page' }],
-        requireInteraction: true
+        message: summary.slice(0, 180)
+      });
+    } else if (forceNotification) {
+      const url = new URL(currentSettings.url);
+      
+      await chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icons/icon48.png',
+        title: `🔍 Test completed on ${url.hostname}`,
+        message: 'No changes detected at this time.'
       });
     }
   } catch (error) {

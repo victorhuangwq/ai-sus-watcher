@@ -99,14 +99,17 @@ async function testNow() {
   elements.testBtn.textContent = 'Testing...';
   
   try {
+    console.log('Sending testNow message to background script');
     const response = await chrome.runtime.sendMessage({ action: 'testNow' });
+    console.log('Received response:', response);
     
-    if (response.success) {
+    if (response && response.success) {
       showStatus('Test completed! Check for notifications.', 'success');
     } else {
-      showStatus(`Test failed: ${response.error}`, 'error');
+      showStatus(`Test failed: ${response ? response.error : 'No response'}`, 'error');
     }
   } catch (error) {
+    console.error('Test failed with error:', error);
     showStatus(`Test failed: ${error.message}`, 'error');
   }
   
